@@ -1,8 +1,9 @@
-import numpy as np
+#importing libraries
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics.pairwise import cosine_similarity
 
+#three documents are updated in the variable documents
 documents = [
     # --- Russian Revolution (7 docs) ---
     "The Russian Revolution of 1917 was a period of political and social upheaval in Russia that led to the fall of the Romanov dynasty and the rise of the Soviet Union.",
@@ -32,16 +33,20 @@ documents = [
 ]
 
 
+#Tf-Idf
 vec = TfidfVectorizer(stop_words = 'english')
 X = vec.fit_transform(documents)   
+
+#LSA using SVD
 svd = TruncatedSVD(n_components = 4, random_state = 42)
 X_lsa = svd.fit_transform(X)
 
-q = input("input your query")
+q = input("input your query: ") #takes your query
 q = [q]
-q_TfIdf = vec.transform(q)
+q_TfIdf = vec.transform(q)  #converts your query to latent space
 q_LA = svd.transform(q_TfIdf)
 similarities = cosine_similarity(q_LA, X_lsa)[0]
-ranking = similarities.argsort()[::5]
+ranking = similarities.argsort()[::-1]
 for rank, i in enumerate(ranking):
-    print(f"Rank {rank+1} (score={similarities[i]:.4f}): {documents[i]}")
+    if similarities[i] > 0.05:  # skip irrelevant
+        print(f"Rank {rank+1} (score={similarities[i]:.4f}): {documents[i]}")
